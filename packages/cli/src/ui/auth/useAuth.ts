@@ -74,6 +74,14 @@ export const useAuthCommand = (settings: LoadedSettings, config: Config) => {
           onAuthError(
             'Existing API key detected (GEMINI_API_KEY). Select "Gemini API Key" option to use it.',
           );
+        } else if (process.env['OPENAI_API_KEY']) {
+          onAuthError(
+            'Existing API key detected (OPENAI_API_KEY). Select "OpenAI API Key" option to use it.',
+          );
+        } else if (process.env['GITHUB_TOKEN']) {
+          onAuthError(
+            'Existing GitHub token detected (GITHUB_TOKEN). Select "GitHub Copilot" option to use it.',
+          );
         } else {
           onAuthError('No authentication method selected.');
         }

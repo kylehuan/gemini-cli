@@ -49,15 +49,11 @@ export function useAnimatedScrollbar(
     const unfocusedColor = theme.ui.dark;
     const startColor = colorRef.current;
 
-    if (!focusedColor || !unfocusedColor) {
-      return;
-    }
-
     // Phase 1: Fade In
     let start = Date.now();
     const animateFadeIn = () => {
       const elapsed = Date.now() - start;
-      const progress = Math.max(0, Math.min(elapsed / fadeInDuration, 1));
+      const progress = Math.min(elapsed / fadeInDuration, 1);
 
       setScrollbarColor(interpolateColor(startColor, focusedColor, progress));
 
@@ -73,10 +69,7 @@ export function useAnimatedScrollbar(
           start = Date.now();
           const animateFadeOut = () => {
             const elapsed = Date.now() - start;
-            const progress = Math.max(
-              0,
-              Math.min(elapsed / fadeOutDuration, 1),
-            );
+            const progress = Math.min(elapsed / fadeOutDuration, 1);
             setScrollbarColor(
               interpolateColor(focusedColor, unfocusedColor, progress),
             );

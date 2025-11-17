@@ -42,6 +42,7 @@ describe('createContentGenerator', () => {
     const generator = await createContentGenerator(
       {
         authType: AuthType.USE_GEMINI,
+        model: 'gemini-1.5-flash',
       },
       mockConfigWithFake,
     );
@@ -61,6 +62,7 @@ describe('createContentGenerator', () => {
     const generator = await createContentGenerator(
       {
         authType: AuthType.USE_GEMINI,
+        model: 'gemini-1.5-flash',
       },
       mockConfigWithRecordResponses,
     );
@@ -74,6 +76,7 @@ describe('createContentGenerator', () => {
     );
     const generator = await createContentGenerator(
       {
+        model: 'gemini-pro',
         authType: AuthType.LOGIN_WITH_GOOGLE,
       },
       mockConfig,
@@ -91,6 +94,7 @@ describe('createContentGenerator', () => {
     );
     const generator = await createContentGenerator(
       {
+        model: 'gemini-pro-2.5',
         authType: AuthType.COMPUTE_ADC,
       },
       mockConfig,
@@ -112,6 +116,7 @@ describe('createContentGenerator', () => {
     vi.mocked(GoogleGenAI).mockImplementation(() => mockGenerator as never);
     const generator = await createContentGenerator(
       {
+        model: 'gemini-pro',
         apiKey: 'test-api-key',
         authType: AuthType.USE_GEMINI,
       },
@@ -145,6 +150,7 @@ describe('createContentGenerator', () => {
     vi.mocked(GoogleGenAI).mockImplementation(() => mockGenerator as never);
     const generator = await createContentGenerator(
       {
+        model: 'gemini-pro',
         apiKey: 'test-api-key',
         authType: AuthType.USE_GEMINI,
       },
@@ -174,6 +180,7 @@ describe('createContentGeneratorConfig', () => {
     setModel: vi.fn(),
     flashFallbackHandler: vi.fn(),
     getProxy: vi.fn(),
+    getOpenAISettings: vi.fn().mockReturnValue(undefined),
   } as unknown as Config;
 
   beforeEach(() => {

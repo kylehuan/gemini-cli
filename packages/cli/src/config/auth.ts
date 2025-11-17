@@ -36,5 +36,18 @@ export function validateAuthMethod(authMethod: string): string | null {
     return null;
   }
 
+  if (authMethod === AuthType.USE_OPENAI) {
+    if (!process.env['OPENAI_API_KEY']) {
+      return 'OPENAI_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!';
+    }
+    return null;
+  }
+
+  if (authMethod === AuthType.GITHUB_COPILOT) {
+    // GitHub Copilot can work with or without GITHUB_TOKEN
+    // If no token is provided, it will use the OAuth device flow
+    return null;
+  }
+
   return 'Invalid auth method selected.';
 }

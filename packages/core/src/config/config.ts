@@ -116,6 +116,16 @@ export interface OutputSettings {
   format?: OutputFormat;
 }
 
+export interface OpenAISettings {
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
+}
+
+export interface GitHubCopilotSettings {
+  model?: string;
+}
+
 export interface CodebaseInvestigatorSettings {
   enabled?: boolean;
   maxNumTurns?: number;
@@ -289,6 +299,8 @@ export interface ConfigParameters {
   policyEngineConfig?: PolicyEngineConfig;
   output?: OutputSettings;
   useModelRouter?: boolean;
+  openai?: OpenAISettings;
+  githubCopilot?: GitHubCopilotSettings;
   enableMessageBusIntegration?: boolean;
   disableModelRouterForAuth?: AuthType[];
   codebaseInvestigatorSettings?: CodebaseInvestigatorSettings;
@@ -401,6 +413,8 @@ export class Config {
   private readonly policyEngine: PolicyEngine;
   private readonly outputSettings: OutputSettings;
   private useModelRouter: boolean;
+  private readonly openai?: OpenAISettings;
+  private readonly githubCopilot?: GitHubCopilotSettings;
   private readonly initialUseModelRouter: boolean;
   private readonly disableModelRouterForAuth?: AuthType[];
   private readonly enableMessageBusIntegration: boolean;
@@ -539,6 +553,8 @@ export class Config {
     this.enableShellOutputEfficiency =
       params.enableShellOutputEfficiency ?? true;
     this.extensionManagement = params.extensionManagement ?? true;
+    this.openai = params.openai;
+    this.githubCopilot = params.githubCopilot;
     this.enableExtensionReloading = params.enableExtensionReloading ?? false;
     this.storage = new Storage(this.targetDir);
     this.fakeResponses = params.fakeResponses;
@@ -979,6 +995,14 @@ export class Config {
     return this.modelRouterService;
   }
 
+  getOpenAISettings(): OpenAISettings | undefined {
+    return this.openai;
+  }
+
+  getGitHubCopilotSettings(): GitHubCopilotSettings | undefined {
+    return this.githubCopilot;
+  }
+
   getEnableRecursiveFileSearch(): boolean {
     return this.fileFiltering.enableRecursiveFileSearch;
   }
@@ -1097,6 +1121,10 @@ export class Config {
 
   getIdeMode(): boolean {
     return this.ideMode;
+  }
+
+  getCliVersion(): string {
+    return process.env['CLI_VERSION'] || 'unknown';
   }
 
   /**

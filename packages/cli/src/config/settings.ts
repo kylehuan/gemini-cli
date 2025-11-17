@@ -582,6 +582,12 @@ export function loadEnvironment(settings: Settings): void {
   }
 }
 
+export function loadApiKeysFromSettings(settings: Settings) {
+  if (settings.openai?.apiKey) {
+    process.env['OPENAI_API_KEY'] = settings.openai.apiKey;
+  }
+}
+
 /**
  * Loads settings from user and workspace directories.
  * Project settings override user settings.
@@ -739,6 +745,7 @@ export function loadSettings(
   // loadEnvironment depends on settings so we have to create a temp version of
   // the settings to avoid a cycle
   loadEnvironment(tempMergedSettings);
+  loadApiKeysFromSettings(tempMergedSettings);
 
   // Create LoadedSettings first
 

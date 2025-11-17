@@ -52,6 +52,7 @@ describe('useQuotaAndFallback', () => {
     // This is cleaner than modifying the config class for tests.
     vi.spyOn(mockConfig, 'getContentGeneratorConfig').mockReturnValue({
       authType: AuthType.LOGIN_WITH_GOOGLE,
+      model: 'test-model',
     });
 
     mockHistoryManager = {
@@ -107,6 +108,7 @@ describe('useQuotaAndFallback', () => {
       // Override the default mock from beforeEach for this specific test
       vi.spyOn(mockConfig, 'getContentGeneratorConfig').mockReturnValue({
         authType: AuthType.USE_GEMINI,
+        model: 'test-model',
       });
 
       const handler = getRegisteredHandler();

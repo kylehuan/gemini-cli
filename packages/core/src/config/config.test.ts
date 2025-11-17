@@ -321,6 +321,7 @@ describe('Server Config (config.ts)', () => {
       const config = new Config(baseParams);
       const authType = AuthType.USE_GEMINI;
       const mockContentConfig = {
+        model: 'gemini-pro',
         apiKey: 'test-key',
       };
 

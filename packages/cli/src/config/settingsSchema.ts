@@ -1085,6 +1085,71 @@ const SETTINGS_SCHEMA = {
       },
     },
   },
+
+  openai: {
+    type: 'object',
+    label: 'OpenAI',
+    category: 'OpenAI',
+    requiresRestart: false,
+    default: {},
+    description: 'OpenAI-specific settings.',
+    showInDialog: false,
+    properties: {
+      apiKey: {
+        type: 'string',
+        label: 'API Key',
+        category: 'OpenAI',
+        requiresRestart: false,
+        default: undefined as string | undefined,
+        description:
+          'OpenAI API key. Can also be set via OPENAI_API_KEY environment variable.',
+        showInDialog: true,
+      },
+      baseUrl: {
+        type: 'string',
+        label: 'Base URL',
+        category: 'OpenAI',
+        requiresRestart: false,
+        default: undefined as string | undefined,
+        description:
+          'Custom base URL for OpenAI-compatible APIs. Can also be set via OPENAI_BASE_URL environment variable.',
+        showInDialog: true,
+      },
+      model: {
+        type: 'string',
+        label: 'Model',
+        category: 'OpenAI',
+        requiresRestart: false,
+        default: undefined as string | undefined,
+        description:
+          'OpenAI model to use. Can also be set via OPENAI_MODEL environment variable.',
+        showInDialog: true,
+      },
+    },
+  },
+
+  'github-copilot': {
+    type: 'object',
+    label: 'GitHub Copilot',
+    category: 'GitHub Copilot',
+    requiresRestart: false,
+    default: {},
+    description: 'GitHub Copilot-specific settings.',
+    showInDialog: false,
+    properties: {
+      model: {
+        type: 'string',
+        label: 'Model',
+        category: 'GitHub Copilot',
+        requiresRestart: false,
+        default: undefined as string | undefined,
+        description:
+          'GitHub Copilot model to use (e.g., gpt-4o, gpt-4, gpt-3.5-turbo).',
+        showInDialog: true,
+      },
+    },
+  },
+
   useSmartEdit: {
     type: 'boolean',
     label: 'Use Smart Edit',

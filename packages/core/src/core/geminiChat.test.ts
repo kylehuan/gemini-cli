@@ -1603,6 +1603,7 @@ describe('GeminiChat', () => {
     it('should call handleFallback with the specific failed model and retry if handler returns true', async () => {
       const authType = AuthType.LOGIN_WITH_GOOGLE;
       vi.mocked(mockConfig.getContentGeneratorConfig).mockReturnValue({
+        model: 'gemini-pro',
         authType,
       });
 

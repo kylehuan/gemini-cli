@@ -22,6 +22,7 @@ describe('validateAuthMethod', () => {
     vi.stubEnv('GOOGLE_CLOUD_PROJECT', undefined);
     vi.stubEnv('GOOGLE_CLOUD_LOCATION', undefined);
     vi.stubEnv('GOOGLE_API_KEY', undefined);
+    vi.stubEnv('OPENAI_API_KEY', undefined);
   });
 
   afterEach(() => {
@@ -68,6 +69,20 @@ describe('validateAuthMethod', () => {
           '• GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION environment variables.\n' +
           '• GOOGLE_API_KEY environment variable (if using express mode).\n' +
           'Update your environment and try again (no reload needed if using .env)!',
+      );
+    });
+  });
+
+  describe('USE_OPENAI', () => {
+    it('should return null if OPENAI_API_KEY is set', () => {
+      vi.stubEnv('OPENAI_API_KEY', 'test-key');
+      expect(validateAuthMethod(AuthType.USE_OPENAI)).toBeNull();
+    });
+
+    it('should return an error message if OPENAI_API_KEY is not set', () => {
+      vi.stubEnv('OPENAI_API_KEY', undefined);
+      expect(validateAuthMethod(AuthType.USE_OPENAI)).toBe(
+        'OPENAI_API_KEY environment variable not found. Add that to your environment and try again (no reload needed if using .env)!',
       );
     });
   });

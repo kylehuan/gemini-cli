@@ -557,9 +557,17 @@ export async function loadCliConfig(
   const defaultModel = useModelRouter
     ? DEFAULT_GEMINI_MODEL_AUTO
     : DEFAULT_GEMINI_MODEL;
+
+  // Check if OpenAI authentication is selected and get OpenAI model
+  const isOpenAIAuth = settings.security?.auth?.selectedType === 'openai';
+  const openAIModel = isOpenAIAuth
+    ? settings.openai?.model || process.env['OPENAI_MODEL']
+    : undefined;
+
   const resolvedModel: string =
     argv.model ||
     process.env['GEMINI_MODEL'] ||
+    openAIModel ||
     settings.model?.name ||
     defaultModel;
 
@@ -647,6 +655,8 @@ export async function loadCliConfig(
       format: (argv.outputFormat ?? settings.output?.format) as OutputFormat,
     },
     useModelRouter,
+    openai: settings.openai,
+    githubCopilot: settings['github-copilot'],
     enableMessageBusIntegration,
     codebaseInvestigatorSettings:
       settings.experimental?.codebaseInvestigatorSettings,

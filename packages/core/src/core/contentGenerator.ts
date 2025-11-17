@@ -14,6 +14,7 @@ import type {
 } from '@google/genai';
 import { GoogleGenAI } from '@google/genai';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
+import { DEFAULT_GEMINI_MODEL } from '../config/models.js';
 import type { Config } from '../config/config.js';
 import { loadApiKey } from './apiKeyCredentialStorage.js';
 
@@ -50,13 +51,24 @@ export enum AuthType {
   USE_VERTEX_AI = 'vertex-ai',
   LEGACY_CLOUD_SHELL = 'cloud-shell',
   COMPUTE_ADC = 'compute-default-credentials',
+  USE_OPENAI = 'openai',
+  QWEN_OAUTH = 'qwen-oauth',
+  GITHUB_COPILOT = 'github-copilot',
 }
 
 export type ContentGeneratorConfig = {
+  model: string;
   apiKey?: string;
+  baseUrl?: string;
   vertexai?: boolean;
   authType?: AuthType;
   proxy?: string;
+  // OpenAI-specific properties
+  enableOpenAILogging?: boolean;
+  samplingParams?: Record<string, unknown>;
+  timeout?: number;
+  maxRetries?: number;
+  disableCacheControl?: boolean;
 };
 
 export async function createContentGeneratorConfig(
@@ -72,7 +84,32 @@ export async function createContentGeneratorConfig(
     undefined;
   const googleCloudLocation = process.env['GOOGLE_CLOUD_LOCATION'] || undefined;
 
+  // openai auth
+  const openaiApiKey = process.env['OPENAI_API_KEY'] || undefined;
+  const openaiBaseUrl = process.env['OPENAI_BASE_URL'] || undefined;
+  const openaiModel = process.env['OPENAI_MODEL'] || undefined;
+
+  // github copilot auth
+  const githubToken = process.env['GITHUB_TOKEN'] || undefined;
+
+  // Get OpenAI settings from config
+  const openaiSettings = config.getOpenAISettings();
+
+  // Get GitHub Copilot settings from config
+  const githubCopilotSettings = config.getGitHubCopilotSettings();
+
+  // Determine the effective model based on auth type first
+  let effectiveModel: string;
+  if (authType === AuthType.GITHUB_COPILOT) {
+    effectiveModel = githubCopilotSettings?.model || 'gpt-4o'; // GitHub Copilot default model
+  } else if (authType === AuthType.USE_OPENAI) {
+    effectiveModel = openaiSettings?.model || openaiModel || 'gpt-3.5-turbo';
+  } else {
+    effectiveModel = config.getModel() || DEFAULT_GEMINI_MODEL;
+  }
+
   const contentGeneratorConfig: ContentGeneratorConfig = {
+    model: effectiveModel,
     authType,
     proxy: config?.getProxy(),
   };
@@ -98,6 +135,24 @@ export async function createContentGeneratorConfig(
   ) {
     contentGeneratorConfig.apiKey = googleApiKey;
     contentGeneratorConfig.vertexai = true;
+
+    return contentGeneratorConfig;
+  }
+
+  if (
+    authType === AuthType.USE_OPENAI &&
+    (openaiApiKey || openaiSettings?.apiKey)
+  ) {
+    contentGeneratorConfig.apiKey = openaiSettings?.apiKey || openaiApiKey;
+    contentGeneratorConfig.baseUrl = openaiSettings?.baseUrl || openaiBaseUrl;
+    // Model is already set correctly in effectiveModel
+
+    return contentGeneratorConfig;
+  }
+
+  if (authType === AuthType.GITHUB_COPILOT) {
+    contentGeneratorConfig.apiKey = githubToken;
+    // Model is already set correctly in effectiveModel
 
     return contentGeneratorConfig;
   }
@@ -157,6 +212,31 @@ export async function createContentGenerator(
       });
       return new LoggingContentGenerator(googleGenAI.models, gcConfig);
     }
+
+    if (config.authType === AuthType.USE_OPENAI) {
+      if (!config.apiKey) {
+        throw new Error('OpenAI API key is required');
+      }
+
+      // Import OpenAIContentGenerator dynamically to avoid circular dependencies
+      const { createOpenAIContentGenerator } = await import(
+        './openaiContentGenerator/index.js'
+      );
+
+      // Always use OpenAIContentGenerator, logging is controlled by enableOpenAILogging flag
+      return createOpenAIContentGenerator(config, gcConfig);
+    }
+
+    if (config.authType === AuthType.GITHUB_COPILOT) {
+      // Import OpenAIContentGenerator dynamically to avoid circular dependencies
+      const { createOpenAIContentGenerator } = await import(
+        './openaiContentGenerator/index.js'
+      );
+
+      // Use OpenAI content generator with GitHub Copilot provider
+      return createOpenAIContentGenerator(config, gcConfig);
+    }
+
     throw new Error(
       `Error creating contentGenerator: Unsupported authType: ${config.authType}`,
     );
