@@ -1803,6 +1803,7 @@ describe('AppContainer State Management', () => {
       vi.spyOn(config, 'getContentGeneratorConfig').mockReturnValue({
         authType: AuthType.USE_GEMINI,
         apiKey: 'fake-key',
+        model: 'gemini-2.0-flash-exp',
       });
       const { unmount } = renderAppContainer();
       await act(async () => {
