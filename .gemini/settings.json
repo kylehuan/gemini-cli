@@ -2,14 +2,14 @@
   "openai": {
     "apiKey": "sk-dummy-key-for-local-proxy",
     "baseUrl": "http://localhost:4141/v1",
-    "model": "gemini-3-pro-preview"
+    "model": "gemini-2.5-pro"
   },
   "github-copilot": {
     "model": "gemini-3-pro-preview"
   },
   "security": {
     "auth": {
-      "selectedType": "openai"
+      "selectedType": "github-copilot"
     }
   },
   "general.disableAutoUpdate": true
