@@ -5,12 +5,14 @@
     "model": "gemini-2.5-pro"
   },
   "github-copilot": {
-    "model": "gemini-3-pro-preview"
+    "model": "gemini-2.5-pro"
   },
   "security": {
     "auth": {
       "selectedType": "github-copilot"
     }
   },
-  "general.disableAutoUpdate": true
+  "general":{
+    "disableAutoUpdate": true
+  }
 }
