@@ -134,9 +134,6 @@ export function AuthDialog({
         return;
       }
       if (authType) {
-        const isInitialAuthSelection =
-          !settings.merged.security?.auth?.selectedType;
-
         await clearCachedCredentialFile();
 
         settings.setValue(scope, 'security.auth.selectedType', authType);
@@ -153,7 +150,7 @@ export function AuthDialog({
         }
 
         if (authType === AuthType.USE_GEMINI) {
-          if (isInitialAuthSelection && process.env['GEMINI_API_KEY']) {
+          if (process.env['GEMINI_API_KEY'] !== undefined) {
             setAuthState(AuthState.Unauthenticated);
             return;
           } else {
