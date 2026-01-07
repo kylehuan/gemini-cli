@@ -31,7 +31,6 @@ const mockConfig = {
   getModel: vi.fn().mockReturnValue('gemini-pro'),
   getProxy: vi.fn().mockReturnValue(undefined),
   getUsageStatisticsEnabled: vi.fn().mockReturnValue(true),
-  isInFallbackMode: vi.fn().mockReturnValue(false),
   getPreviewFeatures: vi.fn().mockReturnValue(false),
 } as unknown as Config;
 
@@ -63,7 +62,9 @@ describe('createContentGenerator', () => {
     expect(FakeContentGenerator.fromFile).toHaveBeenCalledWith(
       fakeResponsesFile,
     );
-    expect(generator).toEqual(mockGenerator);
+    expect(generator).toEqual(
+      new LoggingContentGenerator(mockGenerator, mockConfigWithFake),
+    );
   });
 
   it('should create a RecordingContentGenerator', async () => {
@@ -124,7 +125,6 @@ describe('createContentGenerator', () => {
       getModel: vi.fn().mockReturnValue('gemini-pro'),
       getProxy: vi.fn().mockReturnValue(undefined),
       getUsageStatisticsEnabled: () => true,
-      isInFallbackMode: vi.fn().mockReturnValue(false),
       getPreviewFeatures: vi.fn().mockReturnValue(false),
     } as unknown as Config;
 
@@ -195,7 +195,6 @@ describe('createContentGenerator', () => {
       getModel: vi.fn().mockReturnValue('gemini-pro'),
       getProxy: vi.fn().mockReturnValue(undefined),
       getUsageStatisticsEnabled: () => false,
-      isInFallbackMode: vi.fn().mockReturnValue(false),
       getPreviewFeatures: vi.fn().mockReturnValue(false),
     } as unknown as Config;
 
@@ -244,7 +243,6 @@ describe('createContentGenerator', () => {
       getModel: vi.fn().mockReturnValue('gemini-pro'),
       getProxy: vi.fn().mockReturnValue(undefined),
       getUsageStatisticsEnabled: () => false,
-      isInFallbackMode: vi.fn().mockReturnValue(false),
       getPreviewFeatures: vi.fn().mockReturnValue(false),
     } as unknown as Config;
 
@@ -280,7 +278,6 @@ describe('createContentGenerator', () => {
       getModel: vi.fn().mockReturnValue('gemini-pro'),
       getProxy: vi.fn().mockReturnValue(undefined),
       getUsageStatisticsEnabled: () => false,
-      isInFallbackMode: vi.fn().mockReturnValue(false),
       getPreviewFeatures: vi.fn().mockReturnValue(false),
     } as unknown as Config;
 
@@ -324,7 +321,6 @@ describe('createContentGenerator', () => {
     const mockConfig = {
       getModel: vi.fn().mockReturnValue('gemini-pro'),
       getUsageStatisticsEnabled: () => false,
-      isInFallbackMode: vi.fn().mockReturnValue(false),
       getPreviewFeatures: vi.fn().mockReturnValue(false),
     } as unknown as Config;
     const mockGenerator = {

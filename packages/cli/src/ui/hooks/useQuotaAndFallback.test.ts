@@ -70,6 +70,7 @@ describe('useQuotaAndFallback', () => {
 
     setFallbackHandlerSpy = vi.spyOn(mockConfig, 'setFallbackModelHandler');
     vi.spyOn(mockConfig, 'setQuotaErrorOccurred');
+    vi.spyOn(mockConfig, 'setModel');
   });
 
   afterEach(() => {
@@ -138,7 +139,7 @@ describe('useQuotaAndFallback', () => {
           mockGoogleApiError,
           1000 * 60 * 5,
         ); // 5 minutes
-        await act(() => {
+        act(() => {
           promise = handler('gemini-pro', 'gemini-flash', error);
         });
 
@@ -157,13 +158,16 @@ describe('useQuotaAndFallback', () => {
         expect(mockHistoryManager.addItem).not.toHaveBeenCalled();
 
         // Simulate the user choosing to continue with the fallback model
-        await act(() => {
+        act(() => {
           result.current.handleProQuotaChoice('retry_always');
         });
 
         // The original promise from the handler should now resolve
         const intent = await promise!;
         expect(intent).toBe('retry_always');
+
+        // Verify setModel was called with isFallbackModel=true
+        expect(mockConfig.setModel).toHaveBeenCalledWith('gemini-flash', true);
 
         // The pending request should be cleared from the state
         expect(result.current.proQuotaRequest).toBeNull();
@@ -184,7 +188,7 @@ describe('useQuotaAndFallback', () => {
           .calls[0][0] as FallbackModelHandler;
 
         let promise1: Promise<FallbackIntent | null>;
-        await act(() => {
+        act(() => {
           promise1 = handler(
             'gemini-pro',
             'gemini-flash',
@@ -208,7 +212,7 @@ describe('useQuotaAndFallback', () => {
         expect(result2!).toBe('stop');
         expect(result.current.proQuotaRequest).toBe(firstRequest);
 
-        await act(() => {
+        act(() => {
           result.current.handleProQuotaChoice('retry_always');
         });
 
@@ -249,7 +253,7 @@ describe('useQuotaAndFallback', () => {
             .calls[0][0] as FallbackModelHandler;
 
           let promise: Promise<FallbackIntent | null>;
-          await act(() => {
+          act(() => {
             promise = handler('model-A', 'model-B', error);
           });
 
@@ -263,11 +267,11 @@ describe('useQuotaAndFallback', () => {
           expect(mockHistoryManager.addItem).not.toHaveBeenCalled();
           const message = request!.message;
           expect(message).toContain(
-            'model-A is currently experiencing high demand. We apologize and appreciate your patience.',
+            'We are currently experiencing high demand.',
           );
 
           // Simulate the user choosing to continue with the fallback model
-          await act(() => {
+          act(() => {
             result.current.handleProQuotaChoice('retry_always');
           });
 
@@ -275,6 +279,9 @@ describe('useQuotaAndFallback', () => {
           // The original promise from the handler should now resolve
           const intent = await promise!;
           expect(intent).toBe('retry_always');
+
+          // Verify setModel was called with isFallbackModel=true
+          expect(mockConfig.setModel).toHaveBeenCalledWith('model-B', true);
 
           // The pending request should be cleared from the state
           expect(result.current.proQuotaRequest).toBeNull();
@@ -285,7 +292,7 @@ describe('useQuotaAndFallback', () => {
           const lastCall = (mockHistoryManager.addItem as Mock).mock
             .calls[0][0];
           expect(lastCall.type).toBe(MessageType.INFO);
-          expect(lastCall.text).toContain('Switched to fallback model.');
+          expect(lastCall.text).toContain('Switched to fallback model model-B');
         });
       }
 
@@ -305,7 +312,7 @@ describe('useQuotaAndFallback', () => {
         let promise: Promise<FallbackIntent | null>;
         const error = new ModelNotFoundError('model not found', 404);
 
-        await act(() => {
+        act(() => {
           promise = handler('gemini-3-pro-preview', 'gemini-2.5-pro', error);
         });
 
@@ -318,18 +325,25 @@ describe('useQuotaAndFallback', () => {
 
         const message = request!.message;
         expect(message).toBe(
-          `It seems like you don't have access to Gemini 3.
+          `It seems like you don't have access to gemini-3-pro-preview.
 Learn more at https://goo.gle/enable-preview-features
-To disable Gemini 3, disable "Preview features" in /settings.`,
+To disable gemini-3-pro-preview, disable "Preview features" in /settings.`,
         );
 
         // Simulate the user choosing to switch
-        await act(() => {
+        act(() => {
           result.current.handleProQuotaChoice('retry_always');
         });
 
         const intent = await promise!;
         expect(intent).toBe('retry_always');
+
+        // Verify setModel was called with isFallbackModel=true
+        expect(mockConfig.setModel).toHaveBeenCalledWith(
+          'gemini-2.5-pro',
+          true,
+        );
+
         expect(result.current.proQuotaRequest).toBeNull();
       });
     });
@@ -366,7 +380,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
       const handler = setFallbackHandlerSpy.mock
         .calls[0][0] as FallbackModelHandler;
       let promise: Promise<FallbackIntent | null>;
-      await act(() => {
+      act(() => {
         promise = handler(
           'gemini-pro',
           'gemini-flash',
@@ -374,7 +388,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
         );
       });
 
-      await act(() => {
+      act(() => {
         result.current.handleProQuotaChoice('retry_later');
       });
 
@@ -397,7 +411,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
         .calls[0][0] as FallbackModelHandler;
 
       let promise: Promise<FallbackIntent | null>;
-      await act(() => {
+      act(() => {
         promise = handler(
           'gemini-pro',
           'gemini-flash',
@@ -405,7 +419,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
         );
       });
 
-      await act(() => {
+      act(() => {
         result.current.handleProQuotaChoice('retry_always');
       });
 
@@ -413,11 +427,16 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
       expect(intent).toBe('retry_always');
       expect(result.current.proQuotaRequest).toBeNull();
 
+      // Verify setModel was called with isFallbackModel=true
+      expect(mockConfig.setModel).toHaveBeenCalledWith('gemini-flash', true);
+
       // Check for the "Switched to fallback model" message
       expect(mockHistoryManager.addItem).toHaveBeenCalledTimes(1);
       const lastCall = (mockHistoryManager.addItem as Mock).mock.calls[0][0];
       expect(lastCall.type).toBe(MessageType.INFO);
-      expect(lastCall.text).toContain('Switched to fallback model.');
+      expect(lastCall.text).toContain(
+        'Switched to fallback model gemini-flash',
+      );
     });
 
     it('should show a special message when falling back from the preview model', async () => {
@@ -433,7 +452,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
       const handler = setFallbackHandlerSpy.mock
         .calls[0][0] as FallbackModelHandler;
       let promise: Promise<FallbackIntent | null>;
-      await act(() => {
+      act(() => {
         promise = handler(
           PREVIEW_GEMINI_MODEL,
           DEFAULT_GEMINI_MODEL,
@@ -441,7 +460,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
         );
       });
 
-      await act(() => {
+      act(() => {
         result.current.handleProQuotaChoice('retry_always');
       });
 
@@ -451,7 +470,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
       const lastCall = (mockHistoryManager.addItem as Mock).mock.calls[0][0];
       expect(lastCall.type).toBe(MessageType.INFO);
       expect(lastCall.text).toContain(
-        `Switched to fallback model gemini-2.5-pro. We will periodically check if ${PREVIEW_GEMINI_MODEL} is available again.`,
+        `Switched to fallback model gemini-2.5-pro`,
       );
     });
 
@@ -468,7 +487,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
       const handler = setFallbackHandlerSpy.mock
         .calls[0][0] as FallbackModelHandler;
       let promise: Promise<FallbackIntent | null>;
-      await act(() => {
+      act(() => {
         promise = handler(
           PREVIEW_GEMINI_MODEL,
           DEFAULT_GEMINI_FLASH_MODEL,
@@ -476,7 +495,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
         );
       });
 
-      await act(() => {
+      act(() => {
         result.current.handleProQuotaChoice('retry_always');
       });
 
@@ -486,7 +505,7 @@ To disable Gemini 3, disable "Preview features" in /settings.`,
       const lastCall = (mockHistoryManager.addItem as Mock).mock.calls[0][0];
       expect(lastCall.type).toBe(MessageType.INFO);
       expect(lastCall.text).toContain(
-        `Switched to fallback model gemini-2.5-flash.`,
+        `Switched to fallback model gemini-2.5-flash`,
       );
     });
   });

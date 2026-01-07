@@ -67,8 +67,7 @@ export async function validateNonInteractiveAuth(
       }
     }
 
-    await nonInteractiveConfig.refreshAuth(authType);
-    return nonInteractiveConfig;
+    return authType;
   } catch (error) {
     if (nonInteractiveConfig.getOutputFormat() === OutputFormat.JSON) {
       handleError(

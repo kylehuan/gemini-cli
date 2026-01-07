@@ -94,7 +94,8 @@ export class GitHubCopilotOpenAICompatibleProvider
       timeout,
       maxRetries,
       defaultHeaders,
-      fetch: async (url: RequestInfo | URL, init?: RequestInit) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fetch: async (url: any, init?: any) => {
         // Ensure authentication is initialized
         await this.ensureInitialized();
 
@@ -119,7 +120,8 @@ export class GitHubCopilotOpenAICompatibleProvider
         };
 
         // Use the native fetch
-        return fetch(url, enhancedInit);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return fetch(url, enhancedInit) as any;
       },
     });
 
